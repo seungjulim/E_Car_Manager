@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/* 목업(mockup/index.html)의 색상 토큰을 그대로 사용 */
+:root {
+  --background: #eef0f3;
+  --surface: #ffffff;
+  --soft: #f5f6f8;
+  --foreground: #1d2430;
+  --muted: #6b7585;
+  --line: #d5d9e0;
+  --accent: #0f766e;
+  --accent-soft: #d9f0ec;
+  --warn: #b45309;
+  --warn-soft: #fdecc8;
+  --bad: #b91c1c;
+  --bad-soft: #fde0e0;
+  --ok: #15803d;
+  --ok-soft: #dcf3e2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #12151a;
+    --surface: #1b2028;
+    --soft: #232a34;
+    --foreground: #e8ebf0;
+    --muted: #98a2b3;
+    --line: #3a4350;
+    --accent: #4fd1c5;
+    --accent-soft: #16413d;
+    --warn: #f2b45a;
+    --warn-soft: #4a3513;
+    --bad: #f28b8b;
+    --bad-soft: #4a1f1f;
+    --ok: #6fd48e;
+    --ok-soft: #173b24;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-soft: var(--soft);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --font-sans: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  /* 노치·홈 인디케이터 영역 확보 (PWA 전체 화면) */
+  padding-bottom: env(safe-area-inset-bottom);
+}

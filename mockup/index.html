@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-car-manage 와이어프레임</title>
+<style>
+:root{
+  --bg:#eef0f3; --surface:#fff; --soft:#f5f6f8; --ink:#1d2430; --muted:#6b7585; --line:#d5d9e0;
+  --accent:#0f766e; --accent-soft:#d9f0ec; --warn:#b45309; --warn-soft:#fdecc8; --bad:#b91c1c; --bad-soft:#fde0e0; --ok:#15803d; --ok-soft:#dcf3e2;
+}
+:root[data-theme="dark"]{
+  --bg:#12151a; --surface:#1b2028; --soft:#232a34; --ink:#e8ebf0; --muted:#98a2b3; --line:#3a4350;
+  --accent:#4fd1c5; --accent-soft:#16413d; --warn:#f2b45a; --warn-soft:#4a3513; --bad:#f28b8b; --bad-soft:#4a1f1f; --ok:#6fd48e; --ok-soft:#173b24;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12151a; --surface:#1b2028; --soft:#232a34; --ink:#e8ebf0; --muted:#98a2b3; --line:#3a4350;
+    --accent:#4fd1c5; --accent-soft:#16413d; --warn:#f2b45a; --warn-soft:#4a3513; --bad:#f28b8b; --bad-soft:#4a1f1f; --ok:#6fd48e; --ok-soft:#173b24;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.layout{display:flex;gap:24px;max-width:1080px;margin:0 auto;padding:20px 16px;align-items:flex-start}
+.side{width:260px;flex:none;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.side h1{font-size:15px;margin-bottom:2px}
+.side p{color:var(--muted);font-size:12px;margin-bottom:10px}
+.side h2{font-size:11px;letter-spacing:.04em;color:var(--muted);margin:12px 0 4px;text-transform:uppercase}
+.side button{display:block;width:100%;text-align:left;padding:6px 8px;border-radius:6px;font-size:13px}
+.side button:hover{background:var(--soft)}
+.side button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.theme{margin-top:12px;border:1px solid var(--line)!important;text-align:center!important}
+.stage{flex:1;display:flex;justify-content:center}
+.phone{width:390px;height:790px;background:var(--surface);border:2px solid var(--ink);border-radius:30px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.status{height:26px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 20px;font-size:11px;color:var(--muted)}
+.top{flex:none;display:flex;align-items:center;gap:8px;padding:6px 14px 10px;border-bottom:1px solid var(--line)}
+.top .ttl{font-weight:700;font-size:16px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .ib{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-size:14px}
+.view{flex:1;overflow-y:auto;padding:14px}
+.tabbar{flex:none;display:flex;border-top:1px solid var(--line);background:var(--surface)}
+.tabbar button{flex:1;padding:9px 2px 11px;font-size:11px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabbar button i{font-style:normal;font-size:17px}
+.tabbar button.on{color:var(--accent);font-weight:700}
+h3{font-size:15px;margin:16px 0 8px}
+h3:first-child{margin-top:0}
+.sub{color:var(--muted);font-size:12px}
+.card{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface);margin-bottom:10px}
+.card.tap{cursor:pointer}
+.card.tap:hover{border-color:var(--accent)}
+.row{display:flex;align-items:center;gap:8px}
+.row.sb{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ph{position:relative;background:var(--soft);border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  background-image:linear-gradient(to top right,transparent calc(50% - 1px),var(--line) 50%,transparent calc(50% + 1px)),linear-gradient(to bottom right,transparent calc(50% - 1px),var(--line) 50%,transparent calc(50% + 1px))}
+.ph span{position:absolute;left:6px;bottom:4px;font-size:10px;color:var(--muted);background:var(--surface);padding:0 4px;border-radius:4px}
+.ph.sq{aspect-ratio:4/3}
+.ph.wide{aspect-ratio:16/10}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:12px;background:var(--surface);white-space:nowrap}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;flex-wrap:nowrap}
+.chips.wrap{flex-wrap:wrap}
+.badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600}
+.b-ok{background:var(--ok-soft);color:var(--ok)}.b-warn{background:var(--warn-soft);color:var(--warn)}.b-bad{background:var(--bad-soft);color:var(--bad)}.b-gray{background:var(--soft);color:var(--muted)}
+.btn{display:block;width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);text-align:center;font-weight:600;background:var(--surface)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{display:inline-block;width:auto;padding:6px 12px;font-size:12px}
+:root[data-theme="dark"] .btn.pri{color:#06201d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.pri{color:#06201d}}
+.fab{position:absolute;right:16px;bottom:78px;width:50px;height:50px;border-radius:50%;background:var(--accent);color:#fff;font-size:26px;display:grid;place-items:center;border:0}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;padding:5px 2px;font-size:11px;border-right:1px solid var(--line);color:var(--muted)}
+.seg button:last-child{border-right:0}
+.seg button.on.ok{background:var(--ok-soft);color:var(--ok);font-weight:700}
+.seg button.on.warn{background:var(--warn-soft);color:var(--warn);font-weight:700}
+.seg button.on.bad{background:var(--bad-soft);color:var(--bad);font-weight:700}
+.seg button.on.na{background:var(--soft);color:var(--ink);font-weight:700}
+.seg button.on.def{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.tabs{display:flex;border-bottom:1px solid var(--line);margin:0 -14px 12px;padding:0 14px;overflow-x:auto}
+.tabs button{padding:8px 12px;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--accent);border-color:var(--accent);font-weight:700}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+.input{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit}
+textarea.input{min-height:90px;resize:vertical}
+.bar{height:8px;background:var(--soft);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+table.cmp{width:100%;border-collapse:collapse;font-size:12px}
+table.cmp th,table.cmp td{border:1px solid var(--line);padding:6px;text-align:center}
+table.cmp td:first-child,table.cmp th:first-child{text-align:left;background:var(--soft);font-weight:600;white-space:nowrap}
+table.cmp tr.hl td{background:var(--accent-soft)}
+.scroll-x{overflow-x:auto;margin:0 -14px;padding:0 14px}
+.hide{display:none!important}
+.sw{width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.sw.on{background:var(--accent)}
+.sw.on::after{left:21px}
+.num{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:700;flex:none}
+.note{font-size:11px;color:var(--muted);background:var(--soft);border-radius:8px;padding:8px 10px;margin:10px 0}
+.pt{display:flex;gap:12px;align-items:center;cursor:pointer;border:2px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.pt.on{border-color:var(--accent);background:var(--accent-soft)}
+.pt .ic{font-size:26px;width:40px;text-align:center}
+.pt .ck{margin-left:auto;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;color:transparent}
+.pt.on .ck{background:var(--accent);border-color:var(--accent);color:#fff}
+.dots{display:flex;gap:4px;justify-content:center;margin-top:6px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.stars{color:var(--warn);letter-spacing:1px}
+.chk{width:20px;height:20px;border:2px solid var(--line);border-radius:5px;display:inline-grid;place-items:center;font-size:12px;color:transparent;flex:none}
+.chk.on{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (max-width:860px){
+  .layout{flex-direction:column;padding:10px}
+  .side{width:100%;position:static;max-height:none}
+  .side .grp{display:flex;flex-wrap:wrap;gap:4px}
+  .side button{width:auto;border:1px solid var(--line)}
+  .stage{width:100%}
+  .phone{width:100%;max-width:420px;height:760px}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="side" id="side"></aside>
+  <main class="stage">
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>샘플 화면 · 와이어프레임</span></div>
+      <div class="top"><button class="ib" id="back" aria-label="뒤로">‹</button><div class="ttl" id="title"></div><button class="ib" id="homebtn" aria-label="모드 선택">⌂</button></div>
+      <div class="view" id="view"></div>
+      <nav class="tabbar" id="tabbar"></nav>
+    </div>
+  </main>
+</div>
+
+<script>
+// ---------- 데이터 ----------
+const TOP10_INSPECT = [
+  ['타이어 공기압·마모','월 1회 · 셀프'],['브레이크 (패드·브레이크액)','6개월 · 정비소'],['엔진오일 / 감속기오일','월 1회 · 셀프+정비소'],
+  ['냉각수','3개월 · 셀프+정비소'],['12V 배터리','6개월 · 정비소'],['등화장치','월 1회 · 셀프'],
+  ['와이퍼·워셔액','월 1회 · 셀프'],['공조장치','6개월 · 셀프+정비소'],['하체·서스펜션·조향','연 1회 · 정비소'],['경고등·진단 (고전압 포함)','상시 · 셀프+정비소']
+];
+const BLUEHANDS_EXTRA = ['타이어 마모도','브레이크 패드 마모','EV 냉각수·고전압 배터리','변속기오일 ★','에어컨(실내) 필터 ★','구동 벨트 ★'];
+const MAINT10 = ['엔진오일·필터','타이어','브레이크패드','12V 배터리','와이퍼','에어컨 필터','에어클리너','브레이크액','냉각수(부동액)','휠 얼라인먼트'];
+const BUY_TOP10 = [
+  ['예산·총소유비용(TCO)','차량가 외 5년 유지비·보험·세금까지 감당 가능한가?'],
+  ['용도·주행 패턴','출퇴근/장거리 비율, 연간 주행거리, 탑승 인원'],
+  ['파워트레인 적합성','집·직장 충전 가능? 겨울 주행거리는? (전기차)'],
+  ['안전성','NCAP 등급, 충돌 방지·주행보조 사양'],
+  ['공간·크기','가족 인원, 트렁크, 주차 가능 여부'],
+  ['보조금·세제 혜택·할인','구매 보조금, 취득세 감면, 프로모션'],
+  ['트림·옵션 구성','꼭 필요한 사양이 어느 트림부터 포함되나?'],
+  ['서비스·보증','정비망 접근성, 배터리 보증 기간·조건'],
+  ['감가·잔존가치','중고 시세·감가 추이'],
+  ['시승·실사용 후기','승차감, 시야, 소음, 오너 후기']
+];
+
+// ---------- 헬퍼 ----------
+const ph = (label, cls='sq') => `<div class="ph ${cls}"><span>${label}</span></div>`;
+const seg = (opts, on, group, kinds) => `<div class="seg" data-seg="${group}">${opts.map((o,i)=>`<button class="${i===on?'on '+(kinds?kinds[i]:'def'):''}" data-kind="${kinds?kinds[i]:'def'}">${o}</button>`).join('')}</div>`;
+const chips = (arr, on=[], wrap=false) => `<div class="chips ${wrap?'wrap':''}">${arr.map((c,i)=>`<button class="chip ${on.includes(i)?'on':''}" data-chip>${c}</button>`).join('')}</div>`;
+const stars = n => `<span class="stars">${'★'.repeat(n)}${'☆'.repeat(5-n)}</span>`;
+
+// ---------- 화면 정의 ----------
+const S = {};
+
+S.home = {title:'E-car-manage', tabs:null, group:'공통', label:'모드 선택(홈)', render:()=>`
+  <p class="sub">홍길동 가족 · 3명</p>
+  <h3>무엇을 할까요?</h3>
+  <div class="card tap" data-go="shop-pt" style="padding:18px"><div class="row"><div style="font-size:30px">🔍</div><div class="grow"><b style="font-size:16px">신차 구입</b><div class="sub">취향·유형별 탐색, 비교, 구입 준비 체크</div></div><span>›</span></div></div>
+  <div class="card tap" data-go="car-home" style="padding:18px"><div class="row"><div style="font-size:30px">🚗</div><div class="grow"><b style="font-size:16px">차량 관리</b><div class="sub">정비·점검·보험·주행거리·비용</div></div><span>›</span></div></div>
+  <h3>다가오는 일정</h3>
+  <div class="card"><div class="row sb"><span>보험 만기 · 가족 SUV</span><span class="badge b-bad">D-12</span></div></div>
+  <div class="card"><div class="row sb"><span>엔진오일 교체 · 출퇴근 세단</span><span class="badge b-warn">D-30</span></div></div>
+  <div class="card"><div class="row sb"><span>월간 셀프 점검 (6/10 완료)</span><span class="badge b-gray">이번 달</span></div></div>`};
+
+// ----- 신차 구입 -----
+S['shop-pt'] = {title:'신차 구입', tabs:null, group:'신차 구입', label:'파워트레인 선택', render:()=>`
+  <h3 style="font-size:18px">어떤 차를 알아볼까요?</h3>
+  <p class="sub" style="margin-bottom:12px">여러 개 선택할 수 있어요. 나중에 언제든 바꿀 수 있어요.</p>
+  <div class="pt on" data-pt><div class="ic">⚡</div><div class="grow"><b>전기차</b><div class="sub">충전해서 타요 · 보조금·충전 환경 확인</div></div><div class="ck">✓</div></div>
+  <div class="pt" data-pt><div class="ic">🔋</div><div class="grow"><b>하이브리드</b><div class="sub">HEV(충전 불필요) / PHEV(충전+주유)</div>${chips(['HEV','PHEV'],[],true)}</div><div class="ck">✓</div></div>
+  <div class="pt" data-pt><div class="ic">⛽</div><div class="grow"><b>내연기관</b><div class="sub">휘발유 · 디젤 · LPG</div></div><div class="ck">✓</div></div>
+  <div class="pt" data-pt><div class="ic">❓</div><div class="grow"><b>아직 못 정했어요</b><div class="sub">3가지 모두 보고 비교할래요</div></div><div class="ck">✓</div></div>
+  <button class="btn pri" data-go="shop-explore" style="margin-top:6px">다음</button>
+  <p class="note">"아직 못 정했어요"를 고르면 탐색 홈에 <b>유형 비교 가이드</b>(질문 3~4개 → 어울리는 유형 추천)가 나타납니다.</p>`};
+
+S['shop-explore'] = {title:'탐색', tabs:'shop', tab:0, group:'신차 구입', label:'탐색 홈', render:()=>`
+  <div class="row" style="margin-bottom:8px"><div class="chips grow"><button class="chip on" data-go="shop-pt">⚡ 전기차 ✕</button><button class="chip" data-go="shop-pt">+ 유형 추가</button></div></div>
+  <div class="card" style="background:var(--accent-soft);border-color:var(--accent)"><b>취향 요약</b><div class="sub">예산 4,000~5,500만 · SUV · 주행보조 중요</div><button class="btn sm" style="margin-top:6px" data-go="shop-pt">취향 설정</button></div>
+  <div class="card tap" data-go="shop-budget"><div class="row sb"><span>💰 <b>예산으로 추천받기</b><div class="sub">예산을 넣으면 인기 TOP 10 모델을 보여 줘요</div></span><span>›</span></div></div>
+  <h3>브랜드</h3>
+  <div class="chips">${['전체','브랜드 A','브랜드 B','브랜드 C','브랜드 D','브랜드 E'].map((b,i)=>`<button class="chip ${i===0?'on':''}" data-chip-one>${b}</button>`).join('')}</div>
+  <div class="row sb"><h3>추천 / 최근 본</h3><button class="chip" data-go="shop-add">+ 차량 추가</button></div>
+  <div class="grid2">
+    ${[['모델 A1','전기 SUV','5,000만~'],['모델 A2','전기 세단','4,600만~'],['모델 B1','전기 SUV','5,400만~'],['모델 C1','전기 해치백','3,900만~']].map(m=>`
+    <div class="card tap" style="padding:8px" data-go="shop-model">${ph('대표 이미지')}<b style="display:block;margin-top:6px">${m[0]}</b><div class="sub">${m[1]} · ${m[2]}</div></div>`).join('')}
+  </div>
+  <p class="note">모든 금액·사양은 샘플입니다. 실제 앱에서는 가족이 입력·저장한 데이터가 표시됩니다.</p>`};
+
+S['shop-model'] = {title:'모델 A1', tabs:'shop', tab:0, group:'신차 구입', label:'모델 상세(이미지 갤러리)', render:()=>`
+  ${ph('이미지 갤러리 (스와이프)','wide')}
+  <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+  <div class="chips" style="margin-top:8px">${['외관','내부','실내공간','휠·디테일'].map((k,i)=>`<button class="chip ${i===0?'on':''}" data-chip-one>${k}</button>`).join('')}<button class="chip" data-go="shop-add">+ 이미지 추가</button></div>
+  <div class="row sb" style="margin-top:10px"><div><b style="font-size:17px">모델 A1</b> <span class="badge b-ok">전기차</span><div class="sub">브랜드 A · 전기 SUV</div></div><b>5,000만~</b></div>
+  <h3>트림</h3>
+  <div class="seg" data-seg="trim"><button class="on def">스탠다드</button><button data-kind="def">롱레인지</button><button data-kind="def">프레스티지</button></div>
+  <h3>주요 사양 <span class="sub">(전기차 기준)</span></h3>
+  <div class="card"><div class="grid2" style="gap:6px"><div><div class="sub">1회 충전 주행거리</div><b>000 km</b></div><div><div class="sub">배터리 용량</div><b>00 kWh</b></div><div><div class="sub">급속 충전</div><b>00분 (10→80%)</b></div><div><div class="sub">전비</div><b>0.0 km/kWh</b></div></div></div>
+  <h3>운전자 편의사양</h3>
+  <div class="card">${[['안전','전방충돌방지, 차로유지'],['주행보조','고속도로 주행보조, 스마트 크루즈'],['편의','통풍시트, 핸즈프리 트렁크']].map(f=>`<div class="row sb" style="padding:4px 0"><b>${f[0]}</b><span class="sub">${f[1]}</span></div>`).join('')}</div>
+  <div class="grid2"><div class="card"><b style="color:var(--ok)">장점</b><div class="sub">· 넓은 실내<br>· 빠른 충전</div></div><div class="card"><b style="color:var(--bad)">단점</b><div class="sub">· 겨울 주행거리<br>· 옵션 가격</div></div></div>
+  <div class="grid2"><button class="btn" data-go="shop-wish">♡ 관심 추가</button><button class="btn" data-go="shop-compare">⇄ 비교 담기</button></div>
+  <button class="btn" style="margin-top:8px">노션에 저장</button>`};
+
+S['shop-add'] = {title:'차량 추가', tabs:'shop', tab:0, group:'신차 구입', label:'차량 추가 (Claude 입력 + 이미지)', render:()=>`
+  <div class="row" style="margin-bottom:10px"><span class="num">1</span><b>자료 붙여넣기</b><span class="sub">· 제조사 자료/웹 텍스트</span></div>
+  <textarea class="input" placeholder="제조사 카탈로그나 기사 텍스트를 붙여넣으세요"></textarea>
+  <button class="btn pri" style="margin:8px 0" data-reveal="ai-result">Claude로 요약·분류</button>
+  <div id="ai-result" class="hide">
+    <div class="row" style="margin:10px 0"><span class="num">2</span><b>분석 결과 미리보기</b></div>
+    <div class="card"><div class="row sb"><span class="sub">파워트레인 자동 판별</span><span class="badge b-ok">전기차(ev)</span></div>
+      <div class="sub" style="margin-top:6px">브랜드 A · 모델 A1 · 전기 SUV</div>
+      <div class="grid2" style="margin-top:6px;gap:4px"><div class="sub">주행거리 <b style="color:var(--ink)">000km</b></div><div class="sub">배터리 <b style="color:var(--ink)">00kWh</b></div><div class="sub">충전속도 <b style="color:var(--ink)">00kW</b></div><div class="sub">가격 <b style="color:var(--ink)">0,000만</b></div></div>
+      <div style="margin-top:8px" class="sub">편의사양 분류: 안전 4 · 주행보조 3 · 편의 6</div></div>
+    <div class="row" style="margin:10px 0"><span class="num">3</span><b>이미지 추가</b></div>
+    <div class="seg" data-seg="imgsrc"><button class="on def" data-imgtab="up">직접 업로드</button><button data-kind="def" data-imgtab="url">이미지 URL</button></div>
+    <div id="img-up" style="margin-top:8px">
+      <div class="ph wide" style="display:grid;place-items:center"><div style="text-align:center;color:var(--muted)">📷 카메라 / 앨범에서 선택<br><span style="font-size:11px">jpg · png · webp · 10MB 이하</span></div></div></div>
+    <div id="img-url" class="hide" style="margin-top:8px"><input class="input" placeholder="https://..."><div class="note">서버가 이미지를 내려받아 안전하게 저장합니다 (https만 허용).</div></div>
+    <div class="row" style="margin:8px 0"><span class="sub">종류</span>${chips(['외관','내부','실내공간','디테일'],[0])}</div>
+    <div class="row sb"><span>대표 이미지로 지정</span><span class="chk on">✓</span></div>
+    <button class="btn pri" style="margin-top:12px" data-go="shop-explore">저장</button>
+  </div>`};
+
+S['shop-compare'] = {title:'비교', tabs:'shop', tab:1, group:'신차 구입', label:'비교', render:()=>`
+  <div class="scroll-x"><table class="cmp"><tr><th></th><th>${ph('이미지','sq').replace('class="ph sq"','class="ph sq" style="width:70px;margin:auto"')}모델 A1</th><th>${ph('이미지','sq').replace('class="ph sq"','class="ph sq" style="width:70px;margin:auto"')}모델 B1</th><th>${ph('이미지','sq').replace('class="ph sq"','class="ph sq" style="width:70px;margin:auto"')}모델 D1</th></tr>
+  <tr><td>유형</td><td>전기</td><td>전기</td><td>PHEV</td></tr>
+  <tr><td>가격</td><td>5,000만</td><td>5,400만</td><td>4,800만</td></tr>
+  <tr class="hl"><td>5년 총비용</td><td>0,000만</td><td>0,000만</td><td>0,000만</td></tr>
+  <tr><td>km당 에너지비</td><td>00원</td><td>00원</td><td>00원</td></tr>
+  <tr><td>주행거리</td><td>000km</td><td>000km</td><td>-</td></tr>
+  <tr><td>연비</td><td>-</td><td>-</td><td>00km/L</td></tr>
+  <tr><td>충전시간</td><td>00분</td><td>00분</td><td>00분</td></tr>
+  <tr><td>주행보조</td><td>●</td><td>●</td><td>○</td></tr>
+  <tr><td>통풍시트</td><td>●</td><td>○</td><td>●</td></tr>
+  <tr class="hl"><td>체크 가중 총점</td><td>4.2</td><td>3.8</td><td>3.5</td></tr></table></div>
+  <p class="note">여러 유형을 비교할 때는 공통 행(가격·총비용·편의사양) 기준으로, 해당 없는 항목은 <b>-</b>로 표시합니다.</p>
+  <div class="card" style="background:var(--accent-soft);border-color:var(--accent)"><b>Claude 비교 요약</b><div class="sub" style="margin-top:4px">모델 A1은 공간과 충전 속도가 강점, 모델 D1은 충전 환경이 불안할 때 유리합니다. 결정 전 시승(승차감·소음) 확인을 권합니다.</div></div>
+  <button class="btn">노션에 저장</button>`};
+
+S['shop-wish'] = {title:'관심 목록', tabs:'shop', tab:2, group:'신차 구입', label:'관심 목록', render:()=>`
+  <div class="chips" style="margin-bottom:8px">${['전체','검토중','최종후보','탈락'].map((c,i)=>`<button class="chip ${i===0?'on':''}" data-chip-one>${c}</button>`).join('')}</div>
+  ${[['모델 A1 · 롱레인지','최종후보','b-ok',['아빠 ★★★★★','엄마 ★★★★☆','나 ★★★★☆']],['모델 B1','검토중','b-warn',['아빠 ★★★☆☆','엄마 ★★★★☆','나 ★★★☆☆']],['모델 D1','탈락','b-gray',['아빠 ★★☆☆☆','엄마 ★★☆☆☆','나 ★★★☆☆']]].map(w=>`
+  <div class="card tap" data-go="shop-model"><div class="row">${ph('이미지').replace('class="ph sq"','class="ph sq" style="width:80px;flex:none"')}<div class="grow"><b>${w[0]}</b> <span class="badge ${w[2]}">${w[1]}</span><div class="sub" style="margin-top:4px">${w[3].join('<br>')}</div></div></div></div>`).join('')}
+  <button class="btn" data-go="shop-prep">구입 준비로 이동</button>
+  <button class="btn" style="margin-top:8px" data-go="car-list">"구입했어요" → 차량 관리에 자동 등록</button>`};
+
+S['shop-prep'] = {title:'구입 준비', tabs:'shop', tab:3, group:'신차 구입', label:'구입 준비 (TOP10 체크)', render:()=>`
+  <div class="chips" style="margin-bottom:8px">${['모델 A1 · 롱레인지','모델 B1','모델 D1'].map((c,i)=>`<button class="chip ${i===0?'on':''}" data-chip-one>${c}</button>`).join('')}</div>
+  <div class="card"><div class="row sb"><b>구입 비용 계산기</b><span class="badge b-gray">전기차</span></div>
+  <div class="grid2" style="gap:4px;margin-top:6px"><div class="sub">차량가 <b style="color:var(--ink)">0,000만</b></div><div class="sub">보조금 <b style="color:var(--ink)">-000만</b></div><div class="sub">월 납입(60개월) <b style="color:var(--ink)">00만</b></div><div class="sub">5년 총비용 <b style="color:var(--ink)">0,000만</b></div></div></div>
+  <div class="row sb"><h3>구입 전 체크 TOP 10</h3><span class="badge b-ok" id="buy-prog">0 / 10 확인</span></div>
+  <div class="bar" style="margin-bottom:10px"><i id="buy-bar" style="width:0"></i></div>
+  ${BUY_TOP10.map((b,i)=>`<div class="card" data-buy><div class="row"><span class="num">${i+1}</span><div class="grow"><b>${b[0]}</b><div class="sub">${b[1]}</div></div></div>
+  <div class="row" style="margin-top:8px"><div class="grow">${seg(['확인 전','확인함','문제 있음'],0,'buy'+i,['na','ok','bad'])}</div><span class="sub">중요도</span>${stars(i<3?5:i<7?4:3)}</div></div>`).join('')}
+  <button class="btn pri">Claude에게 정리 요청</button>
+  <p class="note">항목별 중요도(가중치)와 후보별 점수로 <b>가중 총점</b>을 계산해 비교표에 반영합니다.</p>`};
+
+// ----- 차량 관리 -----
+S['car-home'] = {title:'홈', tabs:'car', tab:0, group:'차량 관리', label:'차량 관리 홈(대시보드)', render:()=>`
+  <div class="grid2"><div class="card"><div class="sub">이번 달 지출</div><b style="font-size:18px">00만원</b></div><div class="card"><div class="sub">셀프 점검</div><b style="font-size:18px">6 / 10</b></div></div>
+  <div class="grid2" style="margin-bottom:10px"><button class="btn" data-go="car-quote-request">💸 수리 견적 받기</button><button class="btn" data-go="car-statement">🧾 수리내역서 첨부</button></div>
+  <div class="card tap" data-go="car-season"><div class="row sb"><span>☀️ <b>여름철 점검 가이드</b><div class="sub">폭염·장마 전 6가지 확인</div></span><span>›</span></div></div>
+  <div class="card tap" data-go="notif-center" style="background:var(--warn-soft);border-color:var(--warn)"><div class="row sb"><span>🔔 <b>새 알림 3개</b> · 엔진오일 교체 1개월 전</span><span>›</span></div></div>
+  <h3>차량 상태</h3>
+  ${[['가족 SUV','12가 3456','전기차','b-bad','보험 D-12'],['출퇴근 세단','34나 7890','하이브리드','b-warn','오일 D-30']].map(c=>`<div class="card tap" data-go="car-detail"><div class="row"><div class="grow"><b>${c[0]}</b> <span class="sub">${c[1]}</span><div class="sub">${c[2]} · 00,000 km</div></div><span class="badge ${c[3]}">${c[4]}</span></div></div>`).join('')}
+  <h3>최근 기록</h3>
+  <div class="card"><div class="row sb"><span>정비 · 와이퍼 교체</span><span class="sub">6/12</span></div></div>
+  <div class="card"><div class="row sb"><span>주행거리 · 00,000km</span><span class="sub">6/10</span></div></div>
+  <button class="btn pri" data-go="car-self">월간 셀프 점검 시작</button>`};
+
+S['car-list'] = {title:'내 차', tabs:'car', tab:1, group:'차량 관리', label:'내 차 목록', render:()=>`
+  ${[['가족 SUV','12가 3456','전기차 · 2024','00,000 km','D-12'],['출퇴근 세단','34나 7890','하이브리드 · 2021','00,000 km','D-45']].map(c=>`
+  <div class="card tap" data-go="car-detail"><div class="row">${ph('차량').replace('class="ph sq"','class="ph sq" style="width:84px;flex:none"')}<div class="grow"><b style="font-size:15px">${c[0]}</b><div class="sub">${c[1]}</div><div class="sub">${c[2]} · ${c[3]}</div><span class="badge b-warn" style="margin-top:4px">보험 ${c[4]}</span></div></div></div>`).join('')}
+  <button class="fab" data-go="car-add" aria-label="차량 추가">＋</button>`};
+
+S['car-add'] = {title:'차량 등록', tabs:'car', tab:1, group:'차량 관리', label:'차량 등록', render:()=>`
+  <div class="field"><label>차량번호</label><input class="input" placeholder="12가 3456"></div>
+  <div class="grid2"><div class="field"><label>브랜드</label><input class="input"></div><div class="field"><label>모델 / 트림</label><input class="input"></div></div>
+  <div class="field"><label>파워트레인</label>${seg(['전기','HEV','PHEV','내연'],0,'ptsel')}</div>
+  <div class="grid2"><div class="field"><label>구입년도</label><input class="input" placeholder="2024"></div><div class="field"><label>현재 주행거리(km)</label><input class="input"></div></div>
+  <div class="field"><label>차대번호(VIN)</label><input class="input"></div>
+  <div class="field"><label>주 사용자</label>${chips(['아빠','엄마','나'],[0])}</div>
+  <button class="btn pri" data-go="car-list">저장</button>`};
+
+S['car-detail'] = {title:'가족 SUV', tabs:'car', tab:1, group:'차량 관리', label:'차량 상세 (탭)', render:()=>`
+  <div class="card"><div class="row">${ph('차량').replace('class="ph sq"','class="ph sq" style="width:84px;flex:none"')}<div class="grow"><b style="font-size:16px">가족 SUV</b> <span class="badge b-ok">전기차</span><div class="sub">12가 3456 · 2024년식</div><div class="sub">VIN KMH••••••••••1234</div></div></div></div>
+  <div class="tabs" data-tabs="cd"><button class="on" data-t="ov">개요</button><button data-t="sv">정비</button><button data-t="in">점검</button><button data-t="is">보험</button><button data-t="mi">주행</button><button data-t="ch">충전</button></div>
+  <div data-panel="cd-ov"><div class="grid2"><div class="card"><div class="sub">현재 주행거리</div><b>00,000 km</b></div><div class="card"><div class="sub">전비(최근)</div><b>0.0 km/kWh</b></div></div>
+    <div class="card"><div class="row sb"><span>🛡 <b>리콜 확인</b><div class="sub">차대번호 기준 · 6/01 확인</div></span><span class="badge b-ok">해당 없음</span></div><div class="row" style="margin-top:8px;gap:6px"><button class="chip">자동차리콜센터에서 확인</button><button class="chip">VIN 복사</button></div></div>
+    <button class="btn" data-go="car-report" style="margin-bottom:10px">📄 차량 이력 리포트 만들기</button>
+    <h3>다음 예정 (정비 TOP 10 주기)</h3>
+    ${[['타이어 위치교환','D-20','b-warn'],['에어컨 필터','D-50','b-gray'],['12V 배터리','2년 후','b-gray']].map(n=>`<div class="card"><div class="row sb"><span>${n[0]}</span><span class="badge ${n[2]}">${n[1]}</span></div></div>`).join('')}</div>
+  <div data-panel="cd-sv" class="hide"><div class="row sb"><b>정비 기록</b><div class="row" style="gap:6px"><button class="chip" data-go="car-quote-request">💸 견적 받기</button><button class="chip" data-go="car-service-add">+ 기록 추가</button></div></div>
+    ${[['타이어 위치교환','6/12 · 00,000km · 블루핸즈 ○○점','00,000원'],['에어컨 필터 교체','3/02 · 00,000km','00,000원'],['와이퍼 교체','12/20 · 00,000km','00,000원']].map(r=>`<div class="card"><div class="row sb"><b>${r[0]}</b><span>${r[2]}</span></div><div class="sub">${r[1]}</div></div>`).join('')}</div>
+  <div data-panel="cd-in" class="hide"><div class="row sb"><b>점검 이력</b><button class="chip" data-go="car-inspect">+ 점검 시작</button></div>
+    <div class="card"><div class="row sb"><b>블루핸즈 ○○점 · 6/12</b><span class="badge b-warn">주의 1</span></div><div class="sub">브레이크 패드 마모 · 다음 점검 시 재확인</div></div>
+    <div class="card"><div class="row sb"><b>셀프 점검 · 5/30</b><span class="badge b-ok">모두 정상</span></div></div>
+    <button class="btn" data-go="car-self">월간 셀프 점검</button></div>
+  <div data-panel="cd-is" class="hide"><div class="card"><div class="row sb"><b>보험사 A · 자차+대인</b><span class="badge b-bad">D-12</span></div><div class="sub">증권번호 ••••1234<br>2025.07.01 ~ 2026.06.30 · 보험료 000,000원</div></div><button class="btn">+ 보험 추가</button></div>
+  <div data-panel="cd-mi" class="hide"><button class="btn pri" style="margin-bottom:10px">오늘 km 입력</button><div class="card"><div class="sub">주행거리 추이</div><div class="row" style="align-items:flex-end;height:70px;gap:6px">${[30,38,45,52,60,70].map(h=>`<div style="flex:1;background:var(--accent);height:${h}%;border-radius:3px"></div>`).join('')}</div></div></div>
+  <div data-panel="cd-ch" class="hide"><div class="note">충전 기록은 전기차·PHEV 차량에만, 하이브리드·내연기관은 <b>주유 기록</b>이 표시됩니다.</div><div class="card"><div class="row sb"><b>급속 충전</b><span>00,000원</span></div><div class="sub">6/10 · 00kWh · ○○충전소</div></div><div class="grid2"><button class="btn">+ 충전 기록</button><button class="btn" data-go="car-statement">🧾 영수증 촬영</button></div></div>`};
+
+S['car-service-add'] = {title:'정비 기록 추가', tabs:'car', tab:1, group:'차량 관리', label:'정비 기록 (정비 TOP 10 빠른 입력)', render:()=>`
+  <p class="sub" style="margin-bottom:6px">자주 하는 정비 TOP 10 <span class="badge b-gray">추정 순서</span></p>
+  <div class="chips wrap">${MAINT10.map((t,i)=>`<button class="chip ${i===1?'on':''}" data-chip-one>${i+1}. ${t}</button>`).join('')}<button class="chip" data-chip-one>기타</button></div>
+  <p class="note">전기차는 1번이 <b>감속기오일·냉각수 점검</b>, 7번이 <b>고전압 배터리·EV 냉각수 점검</b>으로 대체됩니다.</p>
+  <div class="grid2"><div class="field"><label>날짜</label><input class="input" value="2026-06-12"></div><div class="field"><label>주행거리(km)</label><input class="input" placeholder="이전 값 제안"></div></div>
+  <div class="field"><label>정비소</label><input class="input" placeholder="블루핸즈 ○○점"></div>
+  <div class="grid2"><div class="field"><label>비용(원)</label><input class="input"></div><div class="field"><label>다음 예정</label><input class="input" placeholder="자동 계산됨"></div></div>
+  <div class="field"><label>메모 (Claude가 요약·분류)</label><textarea class="input"></textarea></div>
+  <div class="card tap" data-go="car-statement"><div class="row sb"><span>🧾 <b>수리내역서 이미지 첨부</b><div class="sub">촬영·스크린샷 · 자동 입력</div></span><span>›</span></div></div>
+  <button class="btn pri" data-go="car-detail">저장</button>`};
+
+function inspRow(i,name,meta){return `<div class="card" style="padding:10px"><div class="row sb" style="margin-bottom:6px"><div class="row"><span class="num">${i}</span><b>${name}</b></div><span class="sub">${meta}</span></div>${seg(['정상','주의','교체필요','해당없음'],0,'in'+i,['ok','warn','bad','na'])}</div>`}
+
+S['car-inspect'] = {title:'점검 입력', tabs:'car', tab:1, group:'차량 관리', label:'점검 입력 (TOP10 + 블루핸즈)', render:()=>`
+  <div class="grid2"><div class="field"><label>방문일</label><input class="input" value="2026-06-12"></div><div class="field"><label>주행거리(km)</label><input class="input" placeholder="00,000"></div></div>
+  <div class="field"><label>정비소</label><input class="input" value="블루핸즈 ○○점"></div>
+  <button class="btn" data-allok>모두 "정상"으로 일괄 처리</button>
+  <div class="row sb"><h3>핵심 점검 TOP 10</h3><span class="badge b-gray" id="insp-prog">정상 10 · 주의 0 · 교체 0</span></div>
+  ${TOP10_INSPECT.map((t,i)=>inspRow(i+1,t[0],t[1])).join('')}
+  <h3>블루핸즈 기본 점검 (기타)</h3>
+  ${BLUEHANDS_EXTRA.map(t=>`<div class="card" style="padding:10px"><div class="row sb" style="margin-bottom:6px"><b>${t}</b></div>${seg(['정상','주의','교체필요','해당없음'],0,'ex'+t,['ok','warn','bad','na'])}</div>`).join('')}
+  <p class="note">★ 표시 항목은 일반 정비 기준으로 추가한 항목이며 공식 점검표 확인이 필요합니다. 주의·교체 항목은 일정 탭에 후속 일정으로 자동 생성됩니다.</p>
+  <div class="card tap" data-go="car-quote-request" style="background:var(--accent-soft);border-color:var(--accent)"><div class="row sb"><span>💸 <b>교체·정비 필요 항목 견적 받기</b><div class="sub">내 위치 반경 40km 최저가 TOP 10</div></span><span>›</span></div></div>
+  <button class="btn pri" data-go="car-detail">점검 저장</button>`};
+
+S['car-self'] = {title:'월간 셀프 점검', tabs:'car', tab:0, group:'차량 관리', label:'월간 셀프 점검', render:()=>`
+  <p class="sub" style="margin-bottom:8px">운전자가 직접 1분 안에 확인할 수 있는 항목이에요.</p>
+  <div class="row sb"><b>가족 SUV</b><span class="badge b-gray" id="self-prog">0 / 6</span></div>
+  <div class="bar" style="margin:6px 0 12px"><i id="self-bar" style="width:0"></i></div>
+  ${[['타이어 공기압·마모','전 바퀴 공기압, 균열·편마모 확인'],['엔진오일 / 감속기오일','오일량·누유 확인'],['등화장치','전조·후미·방향지시·브레이크등'],['와이퍼·워셔액','닦임 상태, 워셔액 양'],['냉각수','리저버 수위'],['경고등','계기판 점등 여부']].map(s=>`
+  <div class="card tap" data-self><div class="row"><span class="chk">✓</span><div class="grow"><b>${s[0]}</b><div class="sub">${s[1]}</div></div></div></div>`).join('')}
+  <button class="btn pri" data-go="car-home">점검 완료</button>`};
+
+S['car-schedule'] = {title:'일정', tabs:'car', tab:2, group:'차량 관리', label:'일정', render:()=>`
+  <div class="chips" style="margin-bottom:8px">${['전체','보험','정비 예정','점검 후속'].map((c,i)=>`<button class="chip ${i===0?'on':''}" data-chip-one>${c}</button>`).join('')}</div>
+  <div class="card tap" data-go="notif-settings" style="background:var(--accent-soft);border-color:var(--accent)"><div class="row sb"><span>🔔 점검·정비 알림 <b>1개월 전 · 1주 전</b></span><span>설정 ›</span></div></div>
+  ${[['보험 만기 · 가족 SUV','6/30','D-12','b-bad','1개월 전 ✓ 발송 · 1주 전 ✓ 발송'],['타이어 위치교환 · 가족 SUV','7/08','D-20','b-warn','1개월 전 ✓ 발송 · 1주 전 7/01 예정'],['브레이크 패드 재확인 (점검 후속)','7/15','D-27','b-warn','1개월 전 ✓ 발송 · 1주 전 7/08 예정'],['엔진오일 교체 · 출퇴근 세단','7/18','D-30','b-gray','1개월 전 오늘 발송 · 1주 전 7/11 예정'],['월간 셀프 점검','7/31','D-43','b-gray','1개월 전 7/01 예정 · 1주 전 7/24 예정']].map(e=>`
+  <div class="card"><div class="row sb"><div><b>${e[0]}</b><div class="sub">${e[1]}</div></div><span class="badge ${e[3]}">${e[2]}</span></div><div class="sub" style="margin-top:6px">🔔 ${e[4]}</div></div>`).join('')}`};
+
+// ----- 견적 / 수리내역서 -----
+S['car-quote-request'] = {title:'수리 견적 받기', tabs:'car', tab:1, group:'차량 관리', label:'견적 요청 (내 위치 반경 40km)', render:()=>`
+  <div class="card"><b>가족 SUV</b> <span class="sub">12가 3456 · 전기차</span></div>
+  <h3>무슨 수리인가요?</h3>
+  <div class="chips wrap">${MAINT10.map((t,i)=>`<button class="chip ${i===2?'on':''}" data-chip-one>${t}</button>`).join('')}<button class="chip" data-chip-one>기타</button></div>
+  <div class="field" style="margin-top:10px"><label>증상·요청 내용</label><textarea class="input" placeholder="예: 제동 시 소음, 앞바퀴 패드 교체"></textarea></div>
+  <div class="field"><label>부품 종류</label>${seg(['순정','OEM(인증)','상관없음'],2,'part')}</div>
+  <h3>내 위치에서 찾기</h3>
+  <div class="card"><div class="row sb"><span>📍 <b>현재 위치 사용 중</b> <span class="sub">○○시 ○○동</span></span><button class="chip">변경</button></div>
+    <div class="row sb" style="margin-top:10px"><span class="sub">검색 반경</span><b>40km</b></div>
+    <input type="range" min="5" max="40" value="40" style="width:100%" oninput="this.previousElementSibling.lastElementChild.textContent=this.value+'km'"></div>
+  <div class="field"><label>정비소 유형</label>${chips(['공식(블루핸즈 등)','일반 정비소','전문점(타이어 등)'],[0,1,2])}</div>
+  <button class="btn pri" data-go="car-quote-top10">최저가 견적 TOP 10 보기</button>
+  <p class="note">위치 권한을 허용하면 현재 위치를, 허용하지 않으면 입력한 주소를 기준으로 반경 40km 안의 정비소를 찾습니다.</p>`};
+
+S['car-quote-top10'] = {title:'최저가 견적 TOP 10', tabs:'car', tab:1, group:'차량 관리', label:'최저가 견적 TOP 10 (반경 40km)', render:()=>{
+  const Q=[['정비소 A','일반','6.2','98,000','전화 견적','6개월'],['정비소 B','전문점','14.8','105,000','견적서 첨부','1년'],['정비소 C','일반','21.5','110,000','가족 입력','3개월'],['블루핸즈 ○○점','공식','3.4','112,000','견적서 첨부','1년'],['정비소 D','일반','9.7','118,000','전화 견적','6개월'],['정비소 E','일반','33.0','120,000','가족 입력','-'],['정비소 F','전문점','18.1','128,000','견적서 첨부','1년'],['블루핸즈 △△점','공식','27.9','135,000','전화 견적','1년'],['정비소 G','일반','12.3','142,000','가족 입력','6개월'],['정비소 H','일반','38.2','150,000','전화 견적','-']];
+  return `
+  <div class="row sb"><div><b>브레이크패드 교체</b><div class="sub">📍 ○○동 기준 · 반경 40km</div></div><button class="chip" data-go="car-quote-request">조건 변경</button></div>
+  ${ph('지도 (반경 40km · 정비소 핀 표시)','wide').replace('class="ph wide"','class="ph wide" style="margin:10px 0"')}
+  <div class="chips" style="margin-bottom:8px">${['최저가 순','가까운 순','보증 긴 순','공식만'].map((c,i)=>`<button class="chip ${i===0?'on':''}" data-chip-one>${c}</button>`).join('')}</div>
+  ${Q.map((q,i)=>`<div class="card tap" data-go="car-quote-detail"><div class="row"><span class="num" ${i<3?'style="background:var(--accent);color:#fff"':''}>${i+1}</span>
+    <div class="grow"><b>${q[0]}</b> <span class="badge ${q[1]==='공식'?'b-ok':'b-gray'}">${q[1]}</span><div class="sub">📍 ${q[2]}km · 보증 ${q[5]} · ${q[4]}</div></div>
+    <div style="text-align:right"><b style="font-size:16px">${q[3]}원</b>${i===0?'<div><span class="badge b-ok">최저가</span></div>':''}</div></div></div>`).join('')}
+  <div class="card" style="border-style:dashed"><b>견적이 아직 없는 정비소 12곳</b><div class="sub">반경 40km 안에서 더 찾았어요. 견적을 요청해 보세요.</div>
+    <div class="row" style="margin-top:8px;gap:6px"><button class="chip" data-reveal="req-sent">문자로 견적 요청 보내기</button><button class="chip">목록 보기</button></div>
+    <div id="req-sent" class="hide sub" style="margin-top:6px;color:var(--ok)">✓ 차량·수리 내용이 담긴 문자 초안을 만들었어요.</div></div>
+  <p class="note">최저가가 항상 최선은 아니에요. <b>부품 종류·보증·견적 확인 방식</b>을 함께 비교하세요. 견적은 정비소가 제시한 값이며 방문 시 달라질 수 있습니다.</p>`}};
+
+S['car-quote-detail'] = {title:'견적 상세', tabs:'car', tab:1, group:'차량 관리', label:'견적 상세', render:()=>`
+  <div class="card"><div class="row sb"><div><b style="font-size:16px">정비소 A</b> <span class="badge b-gray">일반</span><div class="sub">📍 6.2km · ★ 4.2 · 영업 중 ~18:00</div></div><span class="badge b-ok">최저가</span></div>
+    <div class="row" style="margin-top:8px;gap:6px"><button class="chip">📞 전화</button><button class="chip">🧭 길찾기</button></div></div>
+  <h3>견적 내역 <span class="sub">(브레이크패드 교체)</span></h3>
+  <div class="card">${[['부품 (OEM 인증)','58,000원'],['공임','35,000원'],['부가세','5,000원']].map(r=>`<div class="row sb" style="padding:3px 0"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('')}<div class="row sb" style="border-top:1px solid var(--line);margin-top:6px;padding-top:6px"><b>합계</b><b style="font-size:16px">98,000원</b></div></div>
+  <div class="grid2"><div class="card"><div class="sub">보증</div><b>6개월</b></div><div class="card"><div class="sub">견적 유효</div><b>~ 7/15</b></div></div>
+  <div class="sub" style="margin-bottom:4px">견적서 이미지</div>${ph('견적서 사진','wide')}
+  <div class="row" style="margin:10px 0"><span class="sub">견적 출처</span><span class="badge b-gray">전화 견적 · 가족 입력</span></div>
+  <button class="btn pri" data-go="car-statement">수리 완료 → 수리내역서 첨부</button>
+  <button class="btn" style="margin-top:8px" data-go="car-quote-top10">다른 견적 보기</button>`};
+
+S['car-statement'] = {title:'수리내역서 첨부', tabs:'car', tab:1, group:'차량 관리', label:'수리내역서 첨부 (이미지)', render:()=>`
+  <div class="card"><div class="row sb"><div><b>브레이크패드 교체</b><div class="sub">정비소 A · 가족 SUV</div></div><span class="badge b-gray">견적 98,000원</span></div></div>
+  <h3>내역서 이미지</h3>
+  <div class="grid2"><button class="btn" data-reveal="shots">📷 촬영하기</button><button class="btn" data-reveal="shots">🖼 앨범/스크린샷</button></div>
+  <div id="shots" class="hide">
+    <div class="grid2" style="margin-top:10px">${[1,2].map(n=>`<div>${ph('내역서 '+n+'쪽','sq')}<div class="row sb" style="margin-top:4px"><span class="sub">${n}쪽</span><button class="chip">삭제</button></div></div>`).join('')}</div>
+    <p class="sub" style="margin-top:6px">여러 장을 올릴 수 있어요. 자동으로 용량을 줄여 저장해요(jpg · png · webp).</p>
+    <button class="btn pri" style="margin-top:10px" data-reveal="ocr">Claude로 내용 자동 입력</button>
+    <div id="ocr" class="hide">
+      <h3>인식 결과 확인</h3>
+      <div class="card">${[['정비일','2026-07-08'],['정비소','정비소 A'],['항목','브레이크패드 교체 (정비 TOP 10 #3)'],['주행거리','00,000 km'],['실제 금액','102,000원']].map(r=>`<div class="row sb" style="padding:3px 0"><span class="sub">${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div>
+      <div class="card" style="background:var(--warn-soft);border-color:var(--warn)"><div class="row sb"><span>견적 대비</span><b>+4,000원 (견적 98,000원)</b></div></div>
+      <p class="note">인식된 값은 꼭 확인·수정한 뒤 저장하세요. 저장하면 정비 기록이 만들어지고 다음 교체 주기와 알림이 다시 계산됩니다.</p>
+    </div>
+  </div>
+  <div class="field" style="margin-top:12px"><label>문서 종류</label>${chips(['수리내역서','견적서','정비 영수증','주유·충전 영수증'],[0])}</div>
+  <button class="btn pri" data-go="car-detail">정비 기록과 함께 저장</button>`};
+
+// ----- 예산별 인기 TOP 10 -----
+S['shop-budget'] = {title:'예산으로 추천받기', tabs:'shop', tab:0, group:'신차 구입', label:'예산 입력 (인기 TOP 10 추천)', render:()=>`
+  <h3 style="font-size:17px">구입 예산이 얼마인가요?</h3>
+  <div class="chips wrap" style="margin-bottom:10px">${['~3천만','3~4천만','4~5천만','5~6천만','6천만~','직접 입력'].map((c,i)=>`<button class="chip ${i===2?'on':''}" data-chip-one>${c}</button>`).join('')}</div>
+  <div class="grid2"><div class="field"><label>최소 (만원)</label><input class="input" value="4,000"></div><div class="field"><label>최대 (만원)</label><input class="input" value="5,500"></div></div>
+  <input type="range" min="2000" max="10000" step="100" value="5500" style="width:100%">
+  <div class="card" style="margin-top:8px"><div class="row sb"><div><b>보조금 반영한 실구매가로 계산</b><div class="sub">전기차·하이브리드 · 지자체별 금액 차이 있음</div></div><button class="sw on" data-sw aria-label="보조금 반영"></button></div></div>
+  <h3>차량 유형</h3>
+  <div class="chips wrap"><button class="chip on" data-chip>⚡ 전기차</button><button class="chip on" data-chip>🔋 하이브리드</button><button class="chip" data-chip>⛽ 내연기관</button></div>
+  <h3>차급</h3>
+  <div class="chips wrap">${['경·소형','준중형','중형','대형','SUV','MPV'].map((c,i)=>`<button class="chip ${i===4?'on':''}" data-chip>${c}</button>`).join('')}</div>
+  <h3>선호도 기준</h3>
+  ${seg(['인기순(판매량)','가족 취향순','종합'],0,'prefmode')}
+  <p class="sub" style="margin:6px 0 12px">인기순은 최근 3개월 판매 순위, 가족 취향순은 설정한 취향·중요도와의 일치도로 계산해요.</p>
+  <button class="btn pri" data-go="shop-budget-result">TOP 10 추천 보기</button>
+  <p class="note">추천은 <b>카탈로그에 가격이 등록된 모델</b>만 대상으로 해요. 인기 순위 자료가 없으면 먼저 자료를 추가해 주세요.</p>`};
+
+S['shop-budget-result'] = {title:'예산 TOP 10', tabs:'shop', tab:0, group:'신차 구입', label:'예산 인기 TOP 10 결과', render:()=>{
+  const R=[['모델 A1','전기','b-ok','4,600~5,300','#1','0,000대','92%','넓은 실내와 빠른 충전, 보조금 반영 시 예산 여유'],['모델 B1','하이브리드','b-warn','4,100~4,900','#2','0,000대','88%','연비 우수, 충전 환경 걱정 없음'],['모델 C1','전기','b-ok','4,300~5,400','#3','0,000대','81%','주행보조 사양이 풍부'],['모델 D1','내연','b-gray','4,000~5,200','#5','0,000대','74%','가격 대비 옵션 구성이 좋음'],['모델 E1','하이브리드','b-warn','4,500~5,500','#6','0,000대','79%','가족용 공간·승차감 평가가 높음'],['모델 F1','전기','b-ok','4,200~5,000','#8','0,000대','70%','신규 출시 · 판매 이력 짧음'],['모델 G1','내연','b-gray','4,000~4,800','#9','0,000대','65%','유지비가 낮은 편'],['모델 H1','전기','b-ok','4,800~5,500','#11','0,000대','77%','브랜드 A 상위 트림이 예산에 포함'],['모델 I1','하이브리드','b-warn','4,000~5,100','#12','0,000대','68%','도심 주행 위주에 적합'],['모델 J1','내연','b-gray','4,200~5,300','#14','0,000대','60%','대형 SUV, 연료비 부담']];
+  return `
+  <div class="card" style="background:var(--accent-soft);border-color:var(--accent)"><div class="row sb"><div><b>4,000~5,500만원</b> <span class="sub">· SUV · 보조금 반영</span><div class="sub">인기순(최근 3개월 판매) · 자료 갱신 6/30</div></div><button class="chip" data-go="shop-budget">조건 변경</button></div></div>
+  <div class="chips" style="margin:8px 0">${['인기순','가족 취향순','종합'].map((c,i)=>`<button class="chip ${i===0?'on':''}" data-chip-one>${c}</button>`).join('')}</div>
+  ${R.map((r,i)=>`<div class="card"><div class="row" style="align-items:flex-start"><span class="num" ${i<3?'style="background:var(--accent);color:#fff"':''}>${i+1}</span>
+    <div class="grow" data-go="shop-model" style="cursor:pointer"><div class="row" style="gap:10px">${ph('이미지').replace('class="ph sq"','class="ph sq" style="width:76px;flex:none"')}<div class="grow"><b>${r[0]}</b> <span class="badge ${r[2]}">${r[1]}</span>${i===5?' <span class="badge b-gray">신규</span>':''}<div class="sub">예산 내 ${r[3]}만원</div><div class="sub">판매 순위 ${r[4]} · ${r[5]} · 취향 일치 ${r[6]}</div></div></div>
+    <div class="sub" style="margin-top:6px">💬 ${r[7]}</div></div></div>
+    <div class="row" style="margin-top:8px;gap:6px"><button class="chip" data-go="shop-wish">♡ 관심</button><button class="chip" data-go="shop-compare">⇄ 비교</button><button class="chip" data-go="shop-model">점수 근거</button></div></div>`).join('')}
+  <div class="card" style="border-style:dashed"><b>예산 안에 들지만 가격 정보가 없는 인기 모델 3곳</b><div class="sub">가격을 추가하면 순위에 포함돼요.</div><button class="chip" style="margin-top:6px" data-go="shop-add">+ 가격 정보 추가</button></div>
+  <div class="card" style="border-style:dashed"><b>예산을 500만원 올리면 5개 모델이 더 보여요</b><button class="chip" style="margin-top:6px" data-go="shop-budget">예산 조정</button></div>
+  <p class="note">판매량은 렌터카·법인 수요와 프로모션의 영향을 받아요. <b>인기 = 우리 가족에게 맞는 차</b>는 아니니, 가족 취향 일치도와 구입 전 체크 TOP 10도 함께 보세요.</p>`}};
+
+// ----- 추천 기능 (타 앱 참고) -----
+S['car-report'] = {title:'차량 이력 리포트', tabs:'car', tab:1, group:'차량 관리', label:'차량 이력 리포트 (PDF·공유·CSV)', render:()=>`
+  <div class="card"><b>가족 SUV</b> <span class="sub">12가 3456</span><div class="sub">정비·점검·서류를 한 장의 리포트로 만들어요. 중고 판매나 정비소 방문 때 쓰기 좋아요.</div></div>
+  <h3>포함할 내용</h3>
+  ${[['정비 이력',1],['점검 이력',1],['소모품 교체 이력 (정비 TOP 10)',1],['수리내역서 이미지',1],['보험·사고 이력',0],['비용 요약',0]].map(r=>`<div class="card" style="padding:10px"><div class="row sb"><span>${r[0]}</span><button class="sw ${r[1]?'on':''}" data-sw aria-label="${r[0]}"></button></div></div>`).join('')}
+  <div class="field"><label>기간</label>${seg(['전체','최근 3년','올해'],0,'rp')}</div>
+  <div class="card" style="background:var(--soft)"><div class="sub">미리보기</div>${ph('리포트 1쪽 미리보기','wide')}</div>
+  <div class="grid2" style="margin-top:10px"><button class="btn pri">PDF 저장</button><button class="btn">CSV 내보내기</button></div>
+  <button class="btn" style="margin-top:8px" data-reveal="share-ok">🔗 공유 링크 만들기 (7일 후 만료)</button>
+  <div id="share-ok" class="hide note" style="color:var(--ok)">✓ 링크를 만들었어요. 차량번호·VIN은 가려진 상태로 공유됩니다.</div>`};
+
+S['car-season'] = {title:'시즌 점검 가이드', tabs:'car', tab:0, group:'차량 관리', label:'시즌 점검 가이드', render:()=>`
+  <div class="chips" style="margin-bottom:10px">${['봄','여름','가을','겨울'].map((c,i)=>`<button class="chip ${i===1?'on':''}" data-chip-one>${c}</button>`).join('')}</div>
+  <div class="card" style="background:var(--accent-soft);border-color:var(--accent)"><b>여름철 점검 (7~8월)</b><div class="sub">장거리 여행·폭염 전에 확인해요. 정비소 무상점검 시즌과도 겹쳐요.</div></div>
+  ${[['냉각수','과열 방지 · 리저버 수위','점검 TOP 10 #4'],['에어컨·공조','냉방 성능, 실내 필터','점검 TOP 10 #8'],['타이어 공기압·마모','고온에서 파손 위험','점검 TOP 10 #1'],['12V 배터리','폭염에 방전 잦음','점검 TOP 10 #5'],['브레이크','장거리·내리막 대비','점검 TOP 10 #2'],['워셔액·와이퍼','장마철 시야 확보','점검 TOP 10 #7']].map(s=>`
+  <div class="card tap" data-self><div class="row"><span class="chk">✓</span><div class="grow"><b>${s[0]}</b><div class="sub">${s[1]} · ${s[2]}</div></div></div></div>`).join('')}
+  <div class="note">전기차는 <b>겨울철 주행거리 감소·예열·충전 속도 저하</b> 항목이 추가로 나타납니다.</div>
+  <button class="btn pri" data-go="car-inspect">점검 기록 시작</button>`};
+
+S['notif-settings'] = {title:'알림 설정', tabs:'auto', group:'공통', label:'알림 설정 (1개월·1주 전)', render:()=>`
+  <div class="card"><div class="row sb"><div><b>점검·정비 알림</b><div class="sub">주기가 다가오면 미리 알려 드려요</div></div><button class="sw on" data-sw aria-label="알림 켜기"></button></div></div>
+  <h3>언제 알릴까요?</h3>
+  <div class="chips wrap"><button class="chip on" data-chip>1개월 전</button><button class="chip on" data-chip>1주 전</button><button class="chip" data-chip>3일 전</button><button class="chip" data-chip>당일</button><button class="chip" data-chip>+ 직접 추가</button></div>
+  <div class="grid2" style="margin-top:10px"><div class="field"><label>알림 시간</label><input class="input" value="오전 09:00"></div><div class="field"><label>방해금지</label><input class="input" value="22:00 ~ 07:00"></div></div>
+  <h3>어떤 알림을 받을까요?</h3>
+  ${[['소모품 교체 주기','정비 TOP 10 · 오일·타이어·배터리 등',1],['점검 주기','점검 TOP 10 · 정비소 점검',1],['점검 후속 조치','주의·교체필요로 기록된 항목',1],['보험 만기','',1],['월간 셀프 점검','매월 1일 · 1주 전 미리 알림',0]].map(r=>`
+  <div class="card" style="padding:10px"><div class="row sb"><div><b>${r[0]}</b>${r[1]?`<div class="sub">${r[1]}</div>`:''}</div><button class="sw ${r[2]?'on':''}" data-sw aria-label="${r[0]}"></button></div></div>`).join('')}
+  <h3>누가 받을까요?</h3>
+  <div class="seg" data-seg="rcpt"><button class="on def">가족 전체</button><button data-kind="def">차량 주 사용자</button><button data-kind="def">직접 선택</button></div>
+  <h3>받는 방법</h3>
+  <div class="card" style="padding:10px"><div class="row sb"><span>📱 앱 푸시 (PWA)</span><span class="badge b-ok">허용됨</span></div></div>
+  <div class="card" style="padding:10px"><div class="row sb"><span>✉️ 이메일</span><button class="sw" data-sw aria-label="이메일"></button></div></div>
+  <p class="note"><b>주행거리 기준 항목</b>(예: 엔진오일 10,000km)은 최근 평균 일 주행거리로 예상 도래일을 계산해 같은 시점에 알립니다.<br>아이폰은 홈 화면에 앱을 추가한 뒤에만 푸시를 받을 수 있어요.</p>
+  <button class="btn" data-reveal="test-ok">테스트 알림 보내기</button>
+  <div id="test-ok" class="hide note" style="margin-top:8px;color:var(--ok)">✓ 테스트 알림을 보냈어요. 이 기기에서 확인해 보세요.</div>
+  <button class="btn" style="margin-top:8px" data-go="notif-center">알림 센터 보기</button>`};
+
+S['notif-center'] = {title:'알림 센터', tabs:'auto', group:'공통', label:'알림 센터 (받은 알림)', render:()=>`
+  <div class="chips" style="margin-bottom:8px">${['전체','안 읽음 3','정비','보험','점검'].map((c,i)=>`<button class="chip ${i===0?'on':''}" data-chip-one>${c}</button>`).join('')}</div>
+  ${[['엔진오일 교체 · 1개월 전','출퇴근 세단 · 예상 7/18 (D-30)','오늘 09:00','정비 기록하기','car-service-add',1],
+     ['타이어 위치교환 · 1주 전','가족 SUV · 7/08 (D-7)','오늘 09:00','정비 기록하기','car-service-add',1],
+     ['보험 만기 · 1주 전','가족 SUV · 6/30','어제 09:00','보험 보기','car-detail',1],
+     ['브레이크 패드 재확인 · 1개월 전','점검 후속 · 7/15','6/15 09:00','점검 보기','car-inspect',0]].map(n=>`
+  <div class="card" style="${n[5]?'border-left:4px solid var(--accent)':''}"><div class="row sb"><b>${n[0]}</b><span class="sub">${n[2]}</span></div><div class="sub">${n[1]}</div>
+  <div class="row" style="margin-top:8px;gap:6px"><button class="chip" data-go="${n[4]}">${n[3]}</button><button class="chip">1주 미루기</button><button class="chip">완료 처리</button></div></div>`).join('')}
+  <p class="note">알림을 누르면 해당 항목의 정비 기록 작성 화면으로 바로 이동합니다. 정비를 기록하면 다음 주기와 알림이 자동으로 다시 계산됩니다.</p>`};
+
+S['car-cost'] = {title:'비용', tabs:'car', tab:3, group:'차량 관리', label:'비용 (실측 정비 TOP 10)', render:()=>`
+  <div class="row sb"><b>올해 총 유지비</b><b style="font-size:18px">000만원</b></div>
+  <div class="grid2" style="margin-top:8px"><div class="card"><div class="sub">km당 비용</div><b style="font-size:17px">000원/km</b><div class="sub">연료·정비·보험 포함</div></div><div class="card"><div class="sub">최근 전비</div><b style="font-size:17px">0.0 km/kWh</b><div class="sub">지난달 대비 ▲0.2</div></div></div>
+  <div class="card"><div class="row sb"><b>이번 달 예산</b><span class="sub">00만 / 00만원</span></div><div class="bar" style="margin-top:6px"><i style="width:72%"></i></div><div class="sub" style="margin-top:4px">72% 사용 · 80% 넘으면 알림</div></div>
+  <div class="card" style="margin-top:8px"><div class="sub">월별 지출</div><div class="row" style="align-items:flex-end;height:80px;gap:5px">${[20,35,25,60,30,45,40,55,35,28,42,50].map(h=>`<div style="flex:1;background:var(--accent);height:${h}%;border-radius:3px"></div>`).join('')}</div></div>
+  <h3>분류별</h3>
+  ${[['충전·연료',45],['정비',25],['보험',20],['세금·기타',10]].map(c=>`<div style="margin-bottom:8px"><div class="row sb"><span>${c[0]}</span><span class="sub">${c[1]}%</span></div><div class="bar"><i style="width:${c[1]*2}%"></i></div></div>`).join('')}
+  <h3>우리 가족 실측 정비 TOP 10</h3>
+  ${MAINT10.map((t,i)=>`<div class="row sb" style="padding:5px 0;border-bottom:1px solid var(--line)"><span><span class="num">${i+1}</span> ${t}</span><span class="sub">${[7,5,4,3,3,2,2,1,1,1][i]}회</span></div>`).join('')}
+  <p class="note">기본 추정 순위와 가족의 실제 정비 기록 순위를 비교해 보여 줍니다.</p>`};
+
+S.more = {title:'더보기', tabs:'auto', group:'공통', label:'더보기 (가족·노션·설정)', render:()=>`
+  ${[['👪','가족 관리','구성원 3명 · 초대 링크'],['🗒','노션 연동','연결됨 · 마지막 동기화 오늘 09:10'],['🔔','알림 설정','1개월 전 · 1주 전 · 앱 푸시','notif-settings'],['📬','알림 센터','안 읽은 알림 3개','notif-center'],['📄','차량 이력 리포트','PDF · 공유 링크 · CSV','car-report'],['📋','점검 항목 편집','템플릿 · TOP 10 · 주기'],['⚖️','구입 체크 항목·가중치','TOP 10 중요도 설정'],['🌐','언어·번역','한국어'],['🚪','로그아웃','']].map(m=>`
+  <div class="card tap" ${m[3]?`data-go="${m[3]}"`:''}><div class="row"><span style="font-size:20px">${m[0]}</span><div class="grow"><b>${m[1]}</b><div class="sub">${m[2]}</div></div><span>›</span></div></div>`).join('')}`};
+
+// ---------- 탭바 ----------
+const TABS = {
+  shop:[['🔍','탐색','shop-explore'],['⇄','비교','shop-compare'],['♡','관심','shop-wish'],['✅','구입 준비','shop-prep'],['⋯','더보기','more']],
+  car:[['🏠','홈','car-home'],['🚗','내 차','car-list'],['📅','일정','car-schedule'],['💰','비용','car-cost'],['⋯','더보기','more']]
+};
+let lastMode = 'shop', current = 'home', navStack = [];
+
+function go(id, push=true){
+  if(!S[id]) id='home';
+  if(push && current !== id) navStack.push(current);
+  current = id;
+  const s = S[id];
+  if(s.tabs==='shop'||s.tabs==='car') lastMode = s.tabs;
+  const mode = s.tabs==='auto' ? lastMode : s.tabs;
+  document.getElementById('title').textContent = s.title;
+  const v = document.getElementById('view');
+  v.innerHTML = s.render();
+  v.scrollTop = 0;
+  const tb = document.getElementById('tabbar');
+  if(mode){
+    tb.classList.remove('hide');
+    tb.innerHTML = TABS[mode].map(t=>`<button class="${(s.tabs!=='auto' && t[2]===('shop-explore,shop-compare,shop-wish,shop-prep'.includes(id)?id:TABS[mode][s.tab][2])) || (s.tabs==='auto' && t[2]==='more')?'on':''}" data-go="${t[2]}"><i>${t[0]}</i>${t[1]}</button>`).join('');
+  } else { tb.classList.add('hide'); tb.innerHTML=''; }
+  document.querySelectorAll('#side [data-nav]').forEach(b=>b.classList.toggle('on', b.dataset.nav===id));
+  try{ location.hash = id; }catch(e){}
+}
+
+// ---------- 사이드 목록 ----------
+(function buildSide(){
+  const groups = {};
+  Object.keys(S).forEach(id=>{ (groups[S[id].group] = groups[S[id].group]||[]).push(id); });
+  let h = `<h1>E-car-manage</h1><p>화면 와이어프레임 (샘플 데이터)</p>`;
+  Object.keys(groups).forEach(g=>{
+    h += `<h2>${g}</h2><div class="grp">` + groups[g].map(id=>`<button data-nav="${id}">${S[id].label}</button>`).join('') + `</div>`;
+  });
+  h += `<button class="theme" id="theme">🌓 라이트/다크 전환</button>`;
+  document.getElementById('side').innerHTML = h;
+})();
+
+// ---------- 이벤트 ----------
+document.addEventListener('click', e=>{
+  const t = e.target;
+  const nav = t.closest('[data-nav]'); if(nav){ navStack=[]; go(nav.dataset.nav); return; }
+  if(t.closest('#theme')){ const r=document.documentElement; r.dataset.theme = (r.dataset.theme==='dark'||(!r.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches))?'light':'dark'; return; }
+  if(t.closest('#back')){ const p=navStack.pop(); go(p||'home', false); return; }
+  if(t.closest('#homebtn')){ navStack=[]; go('home'); return; }
+
+  const seg = t.closest('.seg button');
+  if(seg){
+    const group = seg.parentElement;
+    group.querySelectorAll('button').forEach(b=>b.className='');
+    seg.className = 'on ' + (seg.dataset.kind || 'def');
+    if(seg.dataset.imgtab){ document.getElementById('img-up').classList.toggle('hide', seg.dataset.imgtab!=='up'); document.getElementById('img-url').classList.toggle('hide', seg.dataset.imgtab!=='url'); }
+    updateInsp(); updateBuy(); return;
+  }
+  const tabBtn = t.closest('[data-tabs] button');
+  if(tabBtn){
+    const wrap = tabBtn.parentElement, key = wrap.dataset.tabs;
+    wrap.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b===tabBtn));
+    document.querySelectorAll(`[data-panel^="${key}-"]`).forEach(p=>p.classList.toggle('hide', p.dataset.panel!==`${key}-${tabBtn.dataset.t}`));
+    return;
+  }
+  const pt = t.closest('[data-pt]');
+  if(pt && !t.closest('.chip')){ pt.classList.toggle('on'); return; }
+  const chipOne = t.closest('[data-chip-one]');
+  if(chipOne){ chipOne.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); chipOne.classList.add('on'); return; }
+  const chip = t.closest('[data-chip]');
+  if(chip && !chip.dataset.go){ chip.classList.toggle('on'); return; }
+  const rev = t.closest('[data-reveal]'); if(rev){ document.getElementById(rev.dataset.reveal).classList.remove('hide'); return; }
+  const self = t.closest('[data-self]');
+  if(self){ self.querySelector('.chk').classList.toggle('on'); updateSelf(); return; }
+  if(t.closest('[data-allok]')){
+    document.querySelectorAll('#view .seg').forEach(g=>{ g.querySelectorAll('button').forEach((b,i)=>{ b.className = i===0 ? 'on '+b.dataset.kind : ''; }); });
+    updateInsp(); return;
+  }
+  const sw = t.closest('[data-sw]'); if(sw){ sw.classList.toggle('on'); return; }
+  const g = t.closest('[data-go]'); if(g){ go(g.dataset.go); return; }
+});
+
+function updateInsp(){
+  const el = document.getElementById('insp-prog'); if(!el) return;
+  let ok=0,warn=0,bad=0;
+  document.querySelectorAll('#view .card .seg').forEach((g,i)=>{ if(i>=10) return; const on=g.querySelector('button.on'); if(!on) return; const k=on.dataset.kind; if(k==='ok')ok++; else if(k==='warn')warn++; else if(k==='bad')bad++; });
+  el.textContent = `정상 ${ok} · 주의 ${warn} · 교체 ${bad}`;
+  el.className = 'badge ' + (bad?'b-bad':warn?'b-warn':'b-ok');
+}
+function updateBuy(){
+  const p = document.getElementById('buy-prog'); if(!p) return;
+  const cards = document.querySelectorAll('[data-buy]'); let ok=0, bad=0;
+  cards.forEach(c=>{ const on=c.querySelector('.seg button.on'); if(on&&on.dataset.kind==='ok')ok++; if(on&&on.dataset.kind==='bad')bad++; });
+  p.textContent = `${ok} / 10 확인` + (bad?` · 문제 ${bad}`:'');
+  p.className = 'badge ' + (bad?'b-warn':'b-ok');
+  document.getElementById('buy-bar').style.width = ok*10+'%';
+}
+function updateSelf(){
+  const n = document.querySelectorAll('[data-self] .chk.on').length;
+  document.getElementById('self-prog').textContent = `${n} / 6`;
+  document.getElementById('self-bar').style.width = (n/6*100)+'%';
+}
+
+// 시작
+go((location.hash||'').replace('#','') || 'home', false);
+</script>
+</body>
+</html>
