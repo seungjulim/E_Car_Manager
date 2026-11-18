@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   },
   description: "가족 차량 관리와 신차 구입을 한곳에서",
   applicationName: "E-car-manage",
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     title: "E-car-manage",

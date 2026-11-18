@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-// TODO: 홈 화면 설치(특히 Android)를 위해 192×192, 512×512 PNG 아이콘을 public/icons 에 추가하고 아래 icons 에 등록한다.
+// 아이콘 이미지는 `node scripts/make-icons.cjs` 로 public/icons 에 만든다(모양·색은 그 파일에서 바꾼다).
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "E-car-manage",
@@ -12,6 +12,9 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#0f766e",
     lang: "ko",
     icons: [
+      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
       {
         src: "/favicon.ico",
         sizes: "any",
