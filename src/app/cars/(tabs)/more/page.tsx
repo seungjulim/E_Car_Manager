@@ -20,6 +20,12 @@ export default function CarsMorePage() {
           </Link>
         </li>
         <li>
+          <Link href="/export" className="block rounded-xl border border-line bg-surface p-4">
+            <b>⬇ 자료 내려받기</b>
+            <span className="block text-sm text-muted">정비·보험·주행 기록을 엑셀(CSV)이나 백업 파일로</span>
+          </Link>
+        </li>
+        <li>
           <Link href="/cars/notifications" className="block rounded-xl border border-line bg-surface p-4">
             <b>🔔 알림 센터</b>
             <span className="block text-sm text-muted">정비 예정·보험 만기 알림 보기</span>
