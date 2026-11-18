@@ -61,11 +61,12 @@ Vercel → 프로젝트 → **Settings → Deployment Protection → Vercel Auth
 ## 7. 문제가 생기면
 | 증상 | 원인 |
 |---|---|
-| 모든 화면이 500 | Clerk 키 누락. `/api/health` 에서 어떤 변수가 비었는지 본다(값은 나오지 않음) |
+| `서버 설정이 아직 끝나지 않았어요` (503) | 화면에 적힌 환경변수가 Vercel 프로젝트의 Production 에 없다. 추가 후 **Redeploy**(Build Cache 끄기) |
+| 모든 화면이 글자 없는 500 | 환경변수가 Production 에 저장되지 않았거나 잘못된 프로젝트에 입력했다. Settings → Environment Variables 목록과 프로젝트 이름을 확인 |
 | `DEPLOYMENT_NOT_FOUND` | 그 주소에 연결된 배포가 없다. 프로젝트의 Domains 에서 실제 주소를 확인 |
 | 로그인 화면 대신 Vercel 로그인 | Deployment Protection 이 켜져 있다 |
 | 서류 사진이 안 올라감 | Blob 스토어가 비공개(private)인지, `BLOB_READ_WRITE_TOKEN` 이 같은 스토어 것인지 |
 
-## 8. 정리(배포가 확인된 뒤)
-- 진단용 `src/app/api/health/route.ts` 와 `public/build-marker.html` 은 지워도 된다(`src/proxy.ts` 의 matcher 에서 `api/health` 예외도 함께).
+## 8. 참고
+- 환경변수가 빠지면 `src/proxy.ts` 가 500 대신 어떤 변수가 비었는지 알려 주는 안내(503)를 보여 준다. 값은 보여 주지 않는다.
 - 한글 컴퓨터 이름 때문에 Vercel CLI 가 `ByteString` 오류로 죽으면 `scripts/ascii-hostname.cjs` 로 우회한다(위 방법은 CLI 가 필요 없다).

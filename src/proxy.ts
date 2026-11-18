@@ -32,8 +32,8 @@ export default function proxy(req: NextRequest, event: NextFetchEvent) {
 
 export const config = {
   matcher: [
-    // Next.js 내부 경로, 정적 파일, 배포 진단용 /api/health 는 제외(키가 빠져 로그인 처리가 죽어도 진단은 열려야 한다)
-    "/((?!_next|api/health(?:/|$)|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api(?!/health(?:/|$))|trpc)(.*)",
+    // Next.js 내부 경로와 정적 파일은 제외
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
   ],
 };
