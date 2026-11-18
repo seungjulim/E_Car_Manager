@@ -8,7 +8,7 @@ import { ComingSoon } from "@/components/coming-soon";
 import { ModelCardView } from "@/components/shop/model-card";
 import { getDb } from "@/db";
 import { listBrandsWithModels, listModelCards } from "@/lib/catalog";
-import { selectionChips } from "@/lib/powertrain";
+import { POWERTRAINS, selectionChips } from "@/lib/powertrain";
 import { getPowertrainPreference } from "@/lib/preferences";
 
 export const metadata: Metadata = { title: "신차 탐색" };
@@ -40,8 +40,8 @@ async function ExploreContent({ searchParams }: { searchParams: PageProps<"/shop
   const [{ userId, orgId }, query] = await Promise.all([auth(), searchParams]);
   if (!userId || !orgId) redirect("/");
 
-  const pref = await getPowertrainPreference(orgId, userId);
-  if (!pref) redirect("/shop"); // 아직 유형을 고르지 않았다면 선택 화면으로
+  // 알아볼 유형을 아직 정하지 않았다면 모든 유형을 보여 준다(첫 화면의 유형 버튼으로 바로 들어온 경우)
+  const pref = (await getPowertrainPreference(orgId, userId)) ?? { powertrains: [...POWERTRAINS], decided: false };
 
   // ?brand=<uuid> 만 허용 (그 외 값은 무시하고 전체 표시)
   const brandId = z.uuid().safeParse(query.brand).data;

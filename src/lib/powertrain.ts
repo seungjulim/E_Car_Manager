@@ -15,6 +15,16 @@ export const GROUP_INFO: Record<Group, { icon: string; title: string; desc: stri
   undecided: { icon: "❓", title: "아직 못 정했어요", desc: "3가지 모두 보고 비교할래요" },
 };
 
+/** 신차 구입 첫 화면의 차량 유형 버튼(DB 파워트레인 값 하나당 버튼 하나) */
+export const POWERTRAIN_BUTTONS: Record<Powertrain, { icon: string; title: string; desc: string }> = {
+  ev: { icon: "⚡", title: "전기차", desc: "충전해서 타요" },
+  hev: { icon: "🔋", title: "하이브리드 (HEV)", desc: "충전 없이 주유만" },
+  phev: { icon: "🔌", title: "플러그인 하이브리드 (PHEV)", desc: "충전 + 주유" },
+  ice: { icon: "⛽", title: "내연기관", desc: "휘발유 · 디젤 · LPG" },
+};
+
+export const isPowertrain = (v: string): v is Powertrain => (POWERTRAINS as readonly string[]).includes(v);
+
 export const HYBRID_TYPES = ["hev", "phev"] as const;
 export type HybridType = (typeof HYBRID_TYPES)[number];
 
