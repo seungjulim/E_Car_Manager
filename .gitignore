@@ -42,3 +42,6 @@ next-env.d.ts
 
 # 환경변수 예시 파일은 커밋한다
 !.env.example
+
+# 비밀 값이 들어 있는 원본 대화 기록 PDF (올리지 않는다. 글만 옮겨 가린 "_가림본" 파일만 올린다)
+/PowerShell Vercel 배포 조회_Gemini작업 내용.pdf
