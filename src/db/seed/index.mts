@@ -1,7 +1,7 @@
 /**
  * 시스템 기본 데이터(org_id = null) 시드. 여러 번 실행해도 안전하다(upsert).
  *
- * 실행:  npx tsx src/db/seed/index.ts
+ * 실행:  npm run db:seed  (또는 npx tsx src/db/seed/index.mts)
  * 필요:  DATABASE_URL (.env.local 또는 .env 에서 자동으로 읽음)
  *
  * 주의: Neon HTTP 드라이버는 트랜잭션을 지원하지 않으므로 문장 단위로 실행한다.
