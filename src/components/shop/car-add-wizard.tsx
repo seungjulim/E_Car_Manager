@@ -15,6 +15,7 @@ import {
   type CarDraft,
   type TrimDraft,
 } from "@/lib/car-draft";
+import { CAR_EXAMPLES, CAR_EXAMPLE_GROUPS } from "@/lib/car-examples";
 import { POWERTRAINS, type Powertrain } from "@/lib/powertrain";
 
 const POWERTRAIN_LABEL: Record<Powertrain, string> = {
@@ -33,6 +34,7 @@ export function CarAddWizard({ maxChars }: { maxChars: number }) {
   const [saveState, saveAction, saving] = useActionState<SaveCarState, FormData>(saveCar, {});
 
   const [text, setText] = useState("");
+  const [exampleId, setExampleId] = useState(""); // 선택한 예시 문구(빈 값 = 직접 입력)
   const [sourceUrl, setSourceUrl] = useState("");
   const [draft, setDraft] = useState<CarDraft | null>(null);
   const [seen, setSeen] = useState<AnalyzeState | null>(null);
@@ -48,6 +50,51 @@ export function CarAddWizard({ maxChars }: { maxChars: number }) {
     return (
       <form action={analyzeAction} className="space-y-4">
         <StepTitle n={1} title="자료 붙여넣기" sub="제조사 카탈로그·기사 텍스트를 붙여넣으면 Claude가 정리해 드려요." />
+        <fieldset className="rounded-xl border border-line bg-surface p-3">
+          <legend className="px-1 text-sm font-semibold">예시 문구 선택 (선택)</legend>
+          <p className="mb-2 text-xs text-muted">
+            고르면 아래 입력칸에 조사해 둔 자료가 채워져요. 가격과 연비는 참고용이니 결과 화면에서 공식 가격표와 맞는지 확인해 주세요.
+          </p>
+          <div className="max-h-64 space-y-3 overflow-y-auto pr-1">
+            <label className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm">
+              <input
+                type="radio"
+                name="example"
+                value=""
+                checked={exampleId === ""}
+                onChange={() => {
+                  setExampleId("");
+                  setText("");
+                }}
+              />
+              직접 붙여넣기
+            </label>
+            {CAR_EXAMPLE_GROUPS.map((group) => {
+              const items = CAR_EXAMPLES.filter((ex) => ex.group === group);
+              if (items.length === 0) return null;
+              return (
+                <div key={group}>
+                  <p className="px-2 text-xs font-semibold text-muted">{group}</p>
+                  {items.map((ex) => (
+                    <label key={ex.id} className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm">
+                      <input
+                        type="radio"
+                        name="example"
+                        value={ex.id}
+                        checked={exampleId === ex.id}
+                        onChange={() => {
+                          setExampleId(ex.id);
+                          setText(ex.text);
+                        }}
+                      />
+                      {ex.label}
+                    </label>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </fieldset>
         <div>
           <label htmlFor="text" className={labelCls}>
             자료 내용
@@ -56,7 +103,11 @@ export function CarAddWizard({ maxChars }: { maxChars: number }) {
             id="text"
             name="text"
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              // 예시를 고친 경우에는 더 이상 그 예시 그대로가 아니므로 '직접 입력'으로 돌린다
+              if (exampleId !== "" && e.target.value !== CAR_EXAMPLES.find((ex) => ex.id === exampleId)?.text) setExampleId("");
+            }}
             rows={10}
             placeholder="모델명, 트림별 가격, 주요 사양, 편의사양 등이 들어 있는 텍스트"
             className={inputCls}
