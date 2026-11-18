@@ -35,6 +35,15 @@ export async function GET(): Promise<Response> {
       ok: true,
       vercelEnv: env.VERCEL_ENV ?? null,
       node: process.version,
+      // 어느 프로젝트·어느 배포가 이 주소를 서비스하는지 대조하는 용도(모두 비밀이 아닌 Vercel 시스템 값)
+      deployment: {
+        url: env.VERCEL_URL ?? null,
+        id: env.VERCEL_DEPLOYMENT_ID ?? null,
+        projectProductionUrl: env.VERCEL_PROJECT_PRODUCTION_URL ?? null,
+        gitSha: env.VERCEL_GIT_COMMIT_SHA ? env.VERCEL_GIT_COMMIT_SHA.slice(0, 7) : null,
+        gitRepo: env.VERCEL_GIT_REPO_SLUG ?? null,
+        region: env.VERCEL_REGION ?? null,
+      },
       set,
       format: {
         clerkPublishableKey: kind(env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, { pk_test_: "test", pk_live_: "live" }),
