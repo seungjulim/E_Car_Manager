@@ -60,12 +60,17 @@ async function TypeContent({ params }: { params: PageProps<"/shop/type/[type]">[
         <div className="space-y-3 rounded-xl border border-line bg-surface p-4">
           <b>아직 저장된 {info.title} 차량이 없어요</b>
           <p className="text-sm text-muted">차량 추가 화면에서 &lsquo;예시 문구 선택&rsquo;으로 조사해 둔 자료를 불러와 저장할 수 있어요.</p>
-          <Link href="/shop/new" className="flex min-h-12 items-center justify-center rounded-xl bg-accent font-semibold text-white">
+          <Link href={`/shop/new?type=${type}`} className="flex min-h-12 items-center justify-center rounded-xl bg-accent font-semibold text-white">
             + 차량 추가
           </Link>
         </div>
       ) : (
-        <TypeCarPicker options={options} />
+        <>
+          <TypeCarPicker options={options} />
+          <Link href={`/shop/new?type=${type}`} className="flex min-h-12 items-center justify-center rounded-xl border border-line bg-surface font-semibold">
+            + {info.title} 차량 추가
+          </Link>
+        </>
       )}
     </>
   );

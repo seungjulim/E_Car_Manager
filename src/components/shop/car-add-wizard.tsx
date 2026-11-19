@@ -15,8 +15,8 @@ import {
   type CarDraft,
   type TrimDraft,
 } from "@/lib/car-draft";
-import { CAR_EXAMPLES, CAR_EXAMPLE_GROUPS } from "@/lib/car-examples";
-import { POWERTRAINS, type Powertrain } from "@/lib/powertrain";
+import { CAR_EXAMPLES, examplesForType, type CarExample } from "@/lib/car-examples";
+import { POWERTRAINS, POWERTRAIN_BUTTONS, type Powertrain } from "@/lib/powertrain";
 
 const POWERTRAIN_LABEL: Record<Powertrain, string> = {
   ev: "전기차",
@@ -29,12 +29,24 @@ const POWERTRAIN_LABEL: Record<Powertrain, string> = {
 const inputCls = "w-full rounded-lg border border-line bg-surface px-3 py-2 text-base";
 const labelCls = "mb-1 block text-xs text-muted";
 
-export function CarAddWizard({ maxChars }: { maxChars: number }) {
+/** 예시 목록을 보여 줄 묶음: 선택한 유형이 있으면 그 유형만, 없으면 유형별로 나눠서 */
+function exampleSections(type: Powertrain | undefined, showAll: boolean): { title: string; items: readonly CarExample[] }[] {
+  if (type && !showAll) return [{ title: `${POWERTRAIN_BUTTONS[type].icon} ${POWERTRAIN_BUTTONS[type].title}`, items: examplesForType(type) }];
+  const sections = POWERTRAINS.map((t) => ({
+    title: `${POWERTRAIN_BUTTONS[t].icon} ${POWERTRAIN_BUTTONS[t].title}`,
+    items: CAR_EXAMPLES.filter((ex) => ex.types[0] === t),
+  }));
+  sections.push({ title: "기타", items: CAR_EXAMPLES.filter((ex) => ex.types.length === 0) });
+  return sections;
+}
+
+export function CarAddWizard({ maxChars, initialType }: { maxChars: number; initialType?: Powertrain }) {
   const [analysis, analyzeAction, analyzing] = useActionState<AnalyzeState, FormData>(analyzeCarText, {});
   const [saveState, saveAction, saving] = useActionState<SaveCarState, FormData>(saveCar, {});
 
   const [text, setText] = useState("");
   const [exampleId, setExampleId] = useState(""); // 선택한 예시 문구(빈 값 = 직접 입력)
+  const [showAll, setShowAll] = useState(false); // 유형을 정하고 들어온 경우에도 다른 유형 예시까지 볼지
   const [sourceUrl, setSourceUrl] = useState("");
   const [draft, setDraft] = useState<CarDraft | null>(null);
   const [seen, setSeen] = useState<AnalyzeState | null>(null);
@@ -69,13 +81,18 @@ export function CarAddWizard({ maxChars }: { maxChars: number }) {
               />
               직접 붙여넣기
             </label>
-            {CAR_EXAMPLE_GROUPS.map((group) => {
-              const items = CAR_EXAMPLES.filter((ex) => ex.group === group);
-              if (items.length === 0) return null;
+            {exampleSections(initialType, showAll).map((section) => {
+              if (section.items.length === 0) {
+                return (
+                  <p key={section.title} className="px-2 text-xs text-muted">
+                    {section.title}: 준비된 예시가 아직 없어요. 직접 붙여넣어 주세요.
+                  </p>
+                );
+              }
               return (
-                <div key={group}>
-                  <p className="px-2 text-xs font-semibold text-muted">{group}</p>
-                  {items.map((ex) => (
+                <div key={section.title}>
+                  <p className="px-2 text-xs font-semibold text-muted">{section.title}</p>
+                  {section.items.map((ex) => (
                     <label key={ex.id} className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm">
                       <input
                         type="radio"
@@ -94,6 +111,11 @@ export function CarAddWizard({ maxChars }: { maxChars: number }) {
               );
             })}
           </div>
+          {initialType && (
+            <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-2 text-xs text-muted underline">
+              {showAll ? `${POWERTRAIN_BUTTONS[initialType].title}만 보기` : "다른 유형 예시도 보기"}
+            </button>
+          )}
         </fieldset>
         <div>
           <label htmlFor="text" className={labelCls}>
