@@ -1,4 +1,5 @@
 import "server-only";
+import { CREDIT_LOW_MESSAGE, isCreditBalanceError } from "@/lib/ai-errors";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
@@ -108,6 +109,7 @@ export async function extractStatement(images: StatementImage[], opts: { presets
     return { ok: true, draft };
   } catch (error) {
     console.error("[extractStatement] Claude 호출 실패:", error);
+    if (isCreditBalanceError(error)) return { ok: false, error: `${CREDIT_LOW_MESSAGE} 그동안은 직접 입력할 수 있어요.` };
     if (error instanceof Anthropic.AuthenticationError) return { ok: false, error: "Claude API 인증에 실패했어요. ANTHROPIC_API_KEY 설정을 확인해 주세요." };
     if (error instanceof Anthropic.RateLimitError) return { ok: false, error: "요청이 많아 잠시 막혔어요. 잠시 후 다시 시도해 주세요." };
     if (error instanceof Anthropic.APIError) return { ok: false, error: `Claude 분석 중 오류가 났어요. (${error.status ?? "연결"}) 직접 입력하거나 잠시 후 다시 시도해 주세요.` };

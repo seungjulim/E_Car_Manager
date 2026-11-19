@@ -1,6 +1,7 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
+import { CREDIT_LOW_MESSAGE, isCreditBalanceError } from "@/lib/ai-errors";
 import { aiCarSchema, type AiCar } from "@/lib/car-draft";
 
 /** 기본은 가장 성능이 높은 최신 Opus. 비용을 줄이고 싶으면 ANTHROPIC_MODEL 로 바꿀 수 있다. */
@@ -70,6 +71,9 @@ export async function extractCar(
     return { ok: true, car: response.parsed_output };
   } catch (error) {
     console.error("[extractCar] Claude 호출 실패:", error);
+    if (isCreditBalanceError(error)) {
+      return { ok: false, error: CREDIT_LOW_MESSAGE };
+    }
     if (error instanceof Anthropic.AuthenticationError) {
       return { ok: false, error: "Claude API 인증에 실패했어요. ANTHROPIC_API_KEY 설정을 확인해 주세요." };
     }
